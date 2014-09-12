@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Micro Template Loader</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page">
+
+      <div class="header">
+        
+          
+          <h1 id="micro-template-loader">Micro Template Loader</h1>
+<p>This is a <a href="http://webpack.github.io/">Webpack</a> <a href="http://webpack.github.io/docs/using-loaders.html">Loader</a>. It converts <strong>HTML</strong> files to a
+Javascript function which can be passed a data model. You can use
+<a href="http://embeddedjs.com/">EJS</a>-style tags to break out in to vanilla Javascript to do anything you
+need. However, best practice dictates that you should keep logic to a
+minimum in your templates.</p>
+
+          
+            <div class='highlight'><pre><span class="hljs-pi">"use strict"</span>;
+
+<span class="hljs-keyword">var</span> openTag     = <span class="hljs-string">"&lt;%"</span>,
+	closeTag    = <span class="hljs-string">"%&gt;"</span>,
+	rWhitespace = <span class="hljs-regexp">/[\r\n\s]+/g</span>,
+	buildDeps   = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./helpers"</span>)</pre></div>
+          
+        
+
+        
+          <div class="toc">
+            <h3>Table of Contents</h3>
+            <ol>
+              
+                
+                <li>
+                  <a class="source" href="helpers.html">
+                    helpers.js
+                  </a>
+                </li>
+              
+                
+                <li>
+                  <a class="source" href="index.html">
+                    index.js
+                  </a>
+                </li>
+              
+            </ol>
+          </div>
+        
+      </div>
+
+      
+        
+        <h2 id="webpack-loader-definition">Webpack Loader Definition</h2>
+
+        
+      
+        
+        <p>Receive HTML input from Webpack and return CommonJS-formatted Javascript.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">microTemplateLoader</span><span class="hljs-params">(content)</span> </span>{
+	<span class="hljs-keyword">this</span>.cacheable &amp;&amp; <span class="hljs-keyword">this</span>.cacheable()
+	<span class="hljs-keyword">var</span> i, segment, first, len, concat,
+		outName = <span class="hljs-string">"_o"</span> + <span class="hljs-built_in">Date</span>.now(), <span class="hljs-comment">// Unique name to prevent tampering</span>
+		usedModules = [],
+		min = !!<span class="hljs-keyword">this</span>.minimize,
+		outputStr = <span class="hljs-string">""</span>,
+		continuable = <span class="hljs-literal">false</span></pre></div>
+        
+      
+        
+        <p>Replace identifiers in <code>content</code> with a special character so the parser
+knows how to differentiate between HTML &amp; JS.</p>
+
+        
+          <div class='highlight'><pre>	content = content.split(openTag).join(closeTag + <span class="hljs-string">"\x11"</span>).split(closeTag)</pre></div>
+        
+      
+        
+        <p>Begin parsing <code>content</code> which is now an array of strings. Some of the
+strings start with our special character <code>\x11</code> which means that string
+should be treated as EJS. We start out with <code>_o = &quot;&quot;</code>.</p>
+
+        
+          <div class='highlight'><pre>	len = content.length
+	concat = (min ? <span class="hljs-string">""</span> : <span class="hljs-string">"\n\t"</span>) + outName + <span class="hljs-string">" = "</span>
+	<span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; len; i++ ) {
+		segment = content[i]
+		<span class="hljs-keyword">if</span> (!segment) <span class="hljs-keyword">continue</span>;
+		<span class="hljs-keyword">if</span> (segment.charAt(<span class="hljs-number">0</span>) === <span class="hljs-string">"\x11"</span>) {
+			first = segment.charAt(<span class="hljs-number">1</span>)</pre></div>
+        
+      
+        
+        <p>Handle EJS Escaped/Unescaped values.</p>
+
+        
+          <div class='highlight'><pre>			<span class="hljs-keyword">if</span> (first === <span class="hljs-string">"="</span> || first === <span class="hljs-string">"!"</span>) {
+				outputStr += (continuable ? <span class="hljs-string">" + "</span> : concat) +
+					(first == <span class="hljs-string">"="</span> ? <span class="hljs-string">"escape("</span> : <span class="hljs-string">"("</span>) + segment.substring(<span class="hljs-number">2</span>).trim() + <span class="hljs-string">")"</span>
+				continuable = <span class="hljs-literal">true</span>
+				<span class="hljs-keyword">if</span> (first === <span class="hljs-string">"="</span>) usedModules.push(<span class="hljs-string">"escape"</span>)</pre></div>
+        
+      
+        
+        <p>If this was the first segment, start an empty string first just
+in case <code>segment</code> is the start of a <code>for</code> loop. Close the
+current string <code>continuable</code> if it’s open and break out in to
+Vanilla JS.</p>
+
+        
+          <div class='highlight'><pre>			} <span class="hljs-keyword">else</span> {
+				<span class="hljs-keyword">if</span> (!outputStr) outputStr = concat + <span class="hljs-string">"\"\""</span>
+				<span class="hljs-keyword">if</span> (continuable) outputStr += <span class="hljs-string">";"</span>
+				outputStr += (min ? <span class="hljs-string">"\n"</span> : <span class="hljs-string">"\n\t"</span>) + segment.substring(<span class="hljs-number">1</span>).trim()
+				continuable = <span class="hljs-literal">false</span>
+			}</pre></div>
+        
+      
+        
+        <p>If <code>segment</code> is plain HTML, start a <code>continuable</code>. Otherwise, just
+append it to <code>outputStr</code>.</p>
+
+        
+          <div class='highlight'><pre>		} <span class="hljs-keyword">else</span> {
+			<span class="hljs-keyword">if</span> (min) { segment = segment.replace(rWhitespace, <span class="hljs-string">" "</span>) }
+			outputStr += (continuable ? (min ? <span class="hljs-string">" + "</span> : <span class="hljs-string">" +\n\t\t"</span>) : concat) +
+				<span class="hljs-built_in">JSON</span>.stringify(segment)
+			continuable = <span class="hljs-literal">true</span>
+		}</pre></div>
+        
+      
+        
+        <p>Switch to <code>_o +=</code> for string concatenation and move on to the next
+<code>segment</code>.</p>
+
+        
+          <div class='highlight'><pre>		concat = (min ? <span class="hljs-string">""</span> : <span class="hljs-string">"\n\t"</span>) + outName + <span class="hljs-string">" += "</span>
+	}</pre></div>
+        
+      
+        
+        <p>Build dependencies (see <a href="./helpers.html">helpers</a>) and inject the
+generated code in to a function.</p>
+
+        
+          <div class='highlight'><pre>	usedModules = usedModules.reduce(buildDeps, <span class="hljs-string">""</span>)
+	<span class="hljs-keyword">return</span> (usedModules ? <span class="hljs-string">"var "</span> + usedModules + <span class="hljs-string">"\n\n"</span> : <span class="hljs-string">""</span>) +
+		<span class="hljs-string">"module.exports = function microTemplate(data) {\n"</span> +
+		<span class="hljs-string">"\tvar "</span> + outputStr.trim() + <span class="hljs-string">"\n"</span> +
+		<span class="hljs-string">"\treturn "</span> + outName + <span class="hljs-string">";\n"</span> +
+		<span class="hljs-string">"}"</span>;
+}</pre></div>
+        
+      
+      <div class="fleur">h</div>
+    </div>
+  </div>
+</body>
+</html>

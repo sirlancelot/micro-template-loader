@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>helpers.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page">
+
+      <div class="header">
+        
+          <h1>helpers.js</h1>
+        
+
+        
+          <div class="toc">
+            <h3>Table of Contents</h3>
+            <ol>
+              
+                
+                <li>
+                  <a class="source" href="helpers.html">
+                    helpers.js
+                  </a>
+                </li>
+              
+                
+                <li>
+                  <a class="source" href="index.html">
+                    index.js
+                  </a>
+                </li>
+              
+            </ol>
+          </div>
+        
+      </div>
+
+      
+        
+        <p>Helper modules encapsulate simple logic which will be shared between
+multiple compiled templates. When Webpack builds multiple templates it will
+identify these helper modules as common and won’t bundle them multiple
+times.</p>
+
+        
+      
+        
+        <p>Provide a function to be used with <code>Array#reduce()</code> which will concatenate
+all the module dependencies in to a string.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">buildDeps</span><span class="hljs-params">(prev, module, i)</span> </span>{
+	<span class="hljs-keyword">return</span> prev + (i === <span class="hljs-number">0</span> ? <span class="hljs-string">""</span> : <span class="hljs-string">",\n\t"</span>) + modules[<span class="hljs-built_in">module</span>];
+}</pre></div>
+        
+      
+        
+        <p>Initialize helper module strings. The key is used during parsing to tell
+the renderer what modules it should create. The value is the <code>require()</code>
+string to be used in the rendered output.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-keyword">var</span> modules = {
+	<span class="hljs-built_in">escape</span>: <span class="hljs-string">"escape = require(\"!!"</span> + __dirname + <span class="hljs-string">"/helpers/escape.js\")"</span>
+}</pre></div>
+        
+      
+      <div class="fleur">h</div>
+    </div>
+  </div>
+</body>
+</html>
