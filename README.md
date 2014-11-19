@@ -1,4 +1,4 @@
-# micro-template loader for webpack
+# micro-template loader [![](http://img.shields.io/npm/v/micro-template-loader.svg?style=flat-square)][npm]
 
 ## Usage
 
@@ -24,3 +24,5 @@ even if your templates don't have any `<% %>` tags.
   }
 }
 ```
+
+  [npm]: https://www.npmjs.org/package/micro-template-loader
