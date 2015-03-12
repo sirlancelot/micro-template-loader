@@ -10,11 +10,12 @@
 // [Loader]: http://webpack.github.io/docs/using-loaders.html
 // [EJS]: http://embeddedjs.com/
 "use strict";
+var crypto = require("crypto")
 
-var openTag     = "<%",
-	closeTag    = "%>",
-	rWhitespace = /[\r\n\s]+/g,
-	buildDeps   = require("./helpers")
+var openTag     = "<%"
+var closeTag    = "%>"
+var rWhitespace = /[\r\n\s]+/g
+var buildDeps   = require("./helpers")
 
 // Webpack Loader Definition
 // ---
@@ -22,12 +23,16 @@ var openTag     = "<%",
 // Receive HTML input from Webpack and return CommonJS-formatted Javascript.
 module.exports = function microTemplateLoader(content) {
 	this.cacheable && this.cacheable()
-	var i, segment, first, len, concat,
-		outName = "_o" + Date.now(), // Unique name to prevent tampering
-		usedModules = [],
-		min = !!this.minimize,
-		outputStr = "",
-		continuable = false
+	var i, segment, first, len, concat
+	var usedModules = []
+	var min = !!this.minimize
+	var outputStr = ""
+	var continuable = false
+	// Create a unique output variable name to discourage tampering from
+	// within an unescaped sequence. The name doesn't really matter and will
+	// matter much if it's getting passed to UglifyJS.
+	var hash = crypto.createHash("md5").update(content)
+	var outName = "_" + hash.digest("hex").substring(0, 8)
 
 	// Replace identifiers in `content` with a special character so the parser
 	// knows how to differentiate between HTML & JS.

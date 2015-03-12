@@ -23,11 +23,12 @@ minimum in your templates.</p>
 
           
             <div class='highlight'><pre><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-keyword">var</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">"crypto"</span>)
 
-<span class="hljs-keyword">var</span> openTag     = <span class="hljs-string">"&lt;%"</span>,
-	closeTag    = <span class="hljs-string">"%&gt;"</span>,
-	rWhitespace = <span class="hljs-regexp">/[\r\n\s]+/g</span>,
-	buildDeps   = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./helpers"</span>)</pre></div>
+<span class="hljs-keyword">var</span> openTag     = <span class="hljs-string">"&lt;%"</span>
+<span class="hljs-keyword">var</span> closeTag    = <span class="hljs-string">"%&gt;"</span>
+<span class="hljs-keyword">var</span> rWhitespace = <span class="hljs-regexp">/[\r\n\s]+/g</span>
+<span class="hljs-keyword">var</span> buildDeps   = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./helpers"</span>)</pre></div>
           
         
 
@@ -67,12 +68,21 @@ minimum in your templates.</p>
         
           <div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">microTemplateLoader</span><span class="hljs-params">(content)</span> </span>{
 	<span class="hljs-keyword">this</span>.cacheable &amp;&amp; <span class="hljs-keyword">this</span>.cacheable()
-	<span class="hljs-keyword">var</span> i, segment, first, len, concat,
-		outName = <span class="hljs-string">"_o"</span> + <span class="hljs-built_in">Date</span>.now(), <span class="hljs-comment">// Unique name to prevent tampering</span>
-		usedModules = [],
-		min = !!<span class="hljs-keyword">this</span>.minimize,
-		outputStr = <span class="hljs-string">""</span>,
-		continuable = <span class="hljs-literal">false</span></pre></div>
+	<span class="hljs-keyword">var</span> i, segment, first, len, concat
+	<span class="hljs-keyword">var</span> usedModules = []
+	<span class="hljs-keyword">var</span> min = !!<span class="hljs-keyword">this</span>.minimize
+	<span class="hljs-keyword">var</span> outputStr = <span class="hljs-string">""</span>
+	<span class="hljs-keyword">var</span> continuable = <span class="hljs-literal">false</span></pre></div>
+        
+      
+        
+        <p>Create a unique output variable name to discourage tampering from
+within an unescaped sequence. The name doesn’t really matter and will
+matter much if it’s getting passed to UglifyJS.</p>
+
+        
+          <div class='highlight'><pre>	<span class="hljs-keyword">var</span> hash = crypto.createHash(<span class="hljs-string">"md5"</span>).update(content)
+	<span class="hljs-keyword">var</span> outName = <span class="hljs-string">"_"</span> + hash.digest(<span class="hljs-string">"hex"</span>).substring(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>)</pre></div>
         
       
         
